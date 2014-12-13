@@ -8,10 +8,33 @@
 #
 #   These are from the scripting documentation: https://github.com/github/hubot/blob/master/docs/scripting.md
 
+
+
+
+
+
 module.exports = (robot) ->
 
-  # robot.hear /badger/i, (msg) ->
-  #   msg.send "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS"
+  robot.hear /deploy/i, (msg) ->
+    msg.send "Kicking off the deploy"
+
+    spawn = require("child_process").spawn
+    sh = spawn("sh", ["auth_server.sh"])
+    sh.stdout.on "data", (data) ->
+      msg.send data.toString()
+      return
+
+    sh.stderr.on "data", (data) ->
+      msg.send data.toString()
+      return
+
+    sh.on "close", (code) ->
+      console.log "child process exited with code " + code
+      msg.send "exited with code "+ code.toString()
+      return
+
+
+
   #
   # robot.respond /open the (.*) doors/i, (msg) ->
   #   doorType = msg.match[1]
