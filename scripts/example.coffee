@@ -7,32 +7,35 @@
 #   Uncomment the ones you want to try and experiment with.
 #
 #   These are from the scripting documentation: https://github.com/github/hubot/blob/master/docs/scripting.md
-
-
-
-
-
-
 module.exports = (robot) ->
 
-  robot.hear /deploy/i, (msg) ->
-    msg.send "Kicking off the deploy"
 
-    spawn = require("child_process").spawn
-    sh = spawn("sh", ["auth_server.sh"])
-    sh.stdout.on "data", (data) ->
-      msg.send data.toString()
-      return
+  robot.hear /debug/i, (msg) ->
+    msg.send process.env.HUBOT_AUTH_ADMIN 
 
-    sh.stderr.on "data", (data) ->
-      msg.send data.toString()
-      return
+  robot.hear /deploy auth-server/i, (msg) ->
+    
+    if robot.auth.hasRole(msg.envelope.user,'deployer')
 
-    sh.on "close", (code) ->
-      console.log "child process exited with code " + code
-      msg.send "exited with code "+ code.toString()
-      return
+      msg.send "Kicking off the deploy"
 
+      spawn = require("child_process").spawn
+      sh = spawn("sh", ["auth_server.sh"])
+      sh.stdout.on "data", (data) ->
+        msg.send data.toString()
+        return
+
+      sh.stderr.on "data", (data) ->
+        msg.send data.toString()
+        return
+
+      sh.on "close", (code) ->
+        console.log "child process exited with code " + code
+        msg.send "exited with code "+ code.toString()
+        return
+    else
+      msg.send "http://i.imgur.com/kgfV66r.gif"
+      msg.send "Sorry, You need to have the deployer role."
 
 
   #
